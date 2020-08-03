@@ -1,0 +1,8 @@
+
+
+# vim comments
+*.swp
+*.swo
+
+# Custom backup format
+.*.*
