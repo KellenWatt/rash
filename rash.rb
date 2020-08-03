@@ -1,15 +1,6 @@
-
-
 class Environment 
   def initialize
     @working_directory = Dir.home
-    @user = ENV['USER']
-  end
-
-  attr_reader :user
-
-  def pwd
-    @working_directory
   end
 
   def chdir(dir)
@@ -17,7 +8,41 @@ class Environment
     @working_directory = Dir.pwd
   end
 
+  def method_missing(m, *args, &block) 
+    if args.length == 0 
+      self.define_singleton_method(m) do
+        ENV[__method__.to_s]
+      end
+      self.send(m)
+    else
+      super
+    end
+  end
 end
 
-$RASH_ENVIRONMENT = Environment.new
+$env = Environment.new
 
+def cd(dir=nil, *junk)
+  if dir.nil? 
+    $env.chdir(Dir.home)
+  else
+    $env.chdir(dir)
+  end
+end
+
+def run(filename)
+  exe = filename.chomp
+  if filename[0] != '/'
+    exe = "./#{exe}"
+  end
+  `#{exe}`
+end
+
+def sourcesh(file) 
+  
+end
+
+def self.method_missing(m, *args, &block) 
+  puts m
+  super if system("#{m} #{args.join(" ")}").nil?
+end
