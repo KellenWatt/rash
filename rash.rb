@@ -1,6 +1,7 @@
 class Environment 
   def initialize
     @working_directory = Dir.home
+    @aliases = Hash.new
   end
 
   def chdir(dir)
@@ -18,9 +19,36 @@ class Environment
       super
     end
   end
+
+  attr_reader :aliases
+
+  def make_alias(new_func, old_func)
+    @aliases[new_func.to_sym] = old_func.to_sym
+  end
+
+  def clear_alias(func) 
+    @aliases.delete(func.to_sym)
+  end
+
+  def resolve_alias(f)
+    al = f.to_sym
+    if @aliases.include?(al)
+      @aliases[al]
+    else
+      al
+    end
+  end
+
 end
 
 $env = Environment.new
+
+alias logout exit
+
+
+# alias unalias remove_method
+
+
 
 def cd(dir=nil, *junk)
   if dir.nil? 
@@ -32,7 +60,7 @@ end
 
 def run(filename)
   exe = filename.chomp
-  if filename[0] != '/'
+  if exe[0] != '/'
     exe = "./#{exe}"
   end
   `#{exe}`
@@ -44,5 +72,6 @@ end
 
 def self.method_missing(m, *args, &block) 
   puts m
-  super if system("#{m} #{args.join(" ")}").nil?
+  super if system("#{$env.resolve_alias(m)} #{args.join(" ")}").nil?
 end
+
