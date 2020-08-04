@@ -1,6 +1,9 @@
+# Generic text and shell files for testing
+# use ! patterns to whitelist exceptions, if any
+*.sh
+*.txt
 
-
-# vim comments
+# Vim swapfiles
 *.swp
 *.swo
 

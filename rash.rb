@@ -43,11 +43,8 @@ end
 
 $env = Environment.new
 
+# Simple aliases for ruby/irb builtins
 alias logout exit
-
-
-# alias unalias remove_method
-
 
 
 def cd(dir=nil, *junk)
@@ -67,7 +64,15 @@ def run(filename)
 end
 
 def sourcesh(file) 
-  
+  bash_env = lambda do |cmd=nil|
+    tmpenv = `#{cmd + ';' if cmd} printenv`
+    tmpenv.split("\n").grep(/[a-zA-z0-9_]+=.*/).map {|l| l.split("=")}
+  end
+  bash_source = lambda do |f|
+    Hash[bash_env.("source #{File.realpath f}") - bash_env.()]
+  end
+
+  bash_source.(file).each {|k,v| ENV[k] = v if k != "SHLVL" && k != "_"}
 end
 
 def self.method_missing(m, *args, &block) 
