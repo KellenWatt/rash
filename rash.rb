@@ -1,4 +1,6 @@
 class Environment
+  
+  DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
 
   attr_reader :aliases
   attr_accessor :prompt
@@ -12,6 +14,7 @@ class Environment
       # This works for affecting the string
       # :PROMPT_I => "%N(%m):%03n:%i %~> ".tap {|s| def s.dup; gsub('%~', Dir.pwd); end },
     }
+    reset_io
   end
 
   def chdir(dir)
@@ -48,6 +51,66 @@ class Environment
     end
   end
   
+
+  # IO operations
+
+  def reset_io
+    reset_stdout
+    reset_stderr
+    reset_stdin
+  end
+  
+  def stdout=(file)
+    case file
+    when String
+      $stdout = @stdout = File.new(file, "w")
+    when :out
+      $stdout = @stdout = STDOUT
+    when :err
+      $stdout = @stdout = STDERR
+    else
+      raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
+      $stdout = @stdout = file
+    end
+  end
+
+  def reset_stdout
+    $stdout = @stdout = DEFAULT_IO[:out]
+  end
+
+  def stderr=(file)
+    case file
+    when String
+      $stderr = @stderr = File.new(file, "w")
+    when :out
+      $stderr = @stderr = STDOUT
+    when :err
+      $stderr = @stderr = STDERR
+    else
+      raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
+      $stderr = @stderr = file
+    end
+  end
+  
+  def reset_stderr
+    $stderr = @stderr = DEFAULT_IO[:err]
+  end
+
+  def stdin=(file)
+    case file
+    when String
+      $stderr = @stderr = File.new(file, "r")
+    when :in
+      $stdin = @stdin = STDIN
+    else
+      raise ArgumentError.new("not an input stream - #{file}") unless file.is_a?(IO)
+    end
+  end
+
+  def reset_stdin
+    $stdin = @stdin = DEFAULT_IO[:in]
+  end
+
   private
 
   class Directory
@@ -63,6 +126,8 @@ class Environment
       @path
     end
   end
+
+
 end
 
 $env = Environment.new
@@ -110,7 +175,6 @@ def self.method_missing(m, *args, &block)
   puts m
   super if system("#{$env.resolve_alias(m)} #{args.join(" ")}").nil?
 end
-
 
 IRB.conf[:PROMPT][:RASH] = {
   :PROMPT_I => "rash   ",
