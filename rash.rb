@@ -202,16 +202,16 @@ def with_stderr_as(file = STDERR)
 end
 
 
-IRB.conf[:PROMPT][:RASH] = {
-  :PROMPT_I => "rash   ",
-  :PROMPT_N => "rash-n ",
-  :PROMPT_S => "rash-s ",
-  :PROMPT_C => "rash-c ",
-  :RETURN => "%s\n" # used to printf
-}
-IRB.conf[:PROMPT_MODE] = :RASH
-IRB.conf[:SAVE_HISTORY] = 1000
-IRB.conf[:AP_NAME] = "rash"
+# IRB.conf[:PROMPT][:RASH] = {
+#   :PROMPT_I => "rash   ",
+#   :PROMPT_N => "rash-n ",
+#   :PROMPT_S => "rash-s ",
+#   :PROMPT_C => "rash-c ",
+#   :RETURN => "%s\n" # used to printf
+# }
+# IRB.conf[:PROMPT_MODE] = :RASH
+# IRB.conf[:SAVE_HISTORY] = 1000
+# IRB.conf[:AP_NAME] = "rash"
 
 run_command_file = "#{$env.HOME}/.rashrc"
 require_relative run_command_file if File.file?(run_command_file)
