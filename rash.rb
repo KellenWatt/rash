@@ -8,6 +8,7 @@ class Environment
   def initialize
     @working_directory = Dir.home
     @aliases = Hash.new
+    @aliasing_enabled = true
     @prompt = {
       # Make this optionally a lambda or string
       # This works for affecting the string
@@ -49,6 +50,30 @@ class Environment
     end
   end
   
+  def without_aliasing
+    old_aliasing = @aliasing_enabled
+    @aliasing_enabled = false
+    if block_given?
+      begin
+        yield
+      ensure
+        @aliasing_enabled = old_aliasing
+      end
+    end
+  end
+
+  def with_aliasing
+    old_aliasing = @aliasing_enabled
+    @aliasing_enabled = true
+    if block_given?
+      begin
+        yield
+      ensure
+        @aliasing_enabled = old_aliasing
+      end
+    end
+  end
+
 
   # IO operations
 
@@ -70,6 +95,9 @@ class Environment
 
 
 end
+require_relative "lib/redirection"
+require_relative "lib/aliasing"
+
 
 $env = Environment.new
 
@@ -135,7 +163,6 @@ def self.method_missing(m, *args, &block)
   end
 end
 
-require_relative "lib/redirection"
 
 
 # IRB.conf[:PROMPT][:RASH] = {
