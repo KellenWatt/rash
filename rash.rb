@@ -8,7 +8,6 @@ class Environment
   def initialize
     @working_directory = Dir.home
     @aliases = Hash.new
-    @default_permissions
     @prompt = {
       # Make this optionally a lambda or string
       # This works for affecting the string
@@ -162,7 +161,7 @@ end
 def sourcesh(file) 
   bash_env = lambda do |cmd = nil|
     tmpenv = `#{cmd + ';' if cmd} printenv`
-    tmpenv.split("\n").grep(/[a-zA-z0-9_]+=.*/).map {|l| l.split("=")}
+    tmpenv.split("\n").grep(/[a-zA-Z0-9_]+=.*/).map {|l| l.split("=")}
   end
   bash_source = lambda do |f|
     Hash[bash_env.call("source #{File.realpath f}") - bash_env.()]
@@ -187,11 +186,7 @@ def which(command)
 end
 
 # Note that I defy convention and don't define `respond_to_missing?`. This
-# is because doing so as-is would involve running the command itself, which 
-# would be 1) probably very slow, and 2) potentially dangerous if the command 
-# has side effects.
-
-
+# is because doing so screws with irb.
 def self.method_missing(m, *args, &block) 
   # puts m
   exe = which(m.to_s)
