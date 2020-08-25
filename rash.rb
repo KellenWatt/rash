@@ -13,7 +13,6 @@ class Environment
       # This works for affecting the string
       # :PROMPT_I => "%N(%m):%03n:%i %~> ".tap {|s| def s.dup; gsub('%~', Dir.pwd); end },
     }
-    reset_io
   end
 
   def chdir(dir)
@@ -63,55 +62,55 @@ class Environment
     $stdout.flush
     case file
     when String
-      $stdout = @stdout = File.new(file, "w")
+      $stdout = File.new(file, "w")
     when :out
-      $stdout = @stdout = STDOUT
+      $stdout = STDOUT
     when :err
-      $stdout = @stdout = STDERR
+      $stdout = STDERR
     else
       raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
-      $stdout = @stdout = file
+      $stdout = file
     end
   end
 
   def reset_stdout
     $stdout.flush
-    $stdout = @stdout = DEFAULT_IO[:out]
+    $stdout = DEFAULT_IO[:out]
   end
 
   def stderr=(file)
     $stderr.flush
     case file
     when String
-      $stderr = @stderr = File.new(file, "w")
+      $stderr = File.new(file, "w")
     when :out
-      $stderr = @stderr = STDOUT
+      $stderr = STDOUT
     when :err
-      $stderr = @stderr = STDERR
+      $stderr = STDERR
     else
       raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
-      $stderr = @stderr = file
+      $stderr = file
     end
   end
   
   def reset_stderr
     $stderr.flush
-    $stderr = @stderr = DEFAULT_IO[:err]
+    $stderr = DEFAULT_IO[:err]
   end
 
   def stdin=(file)
     case file
     when String
-      $stdin = @stdin = File.new(file, "r")
+      $stdin = File.new(file, "r")
     when :in
-      $stdin = @stdin = STDIN
+      $stdin = STDIN
     else
       raise ArgumentError.new("not an input stream - #{file}") unless file.is_a?(IO)
     end
   end
 
   def reset_stdin
-    $stdin = @stdin = DEFAULT_IO[:in]
+    $stdin = DEFAULT_IO[:in]
   end
 
   private
@@ -190,7 +189,7 @@ end
 def self.method_missing(m, *args, &block) 
   # puts m
   exe = which(m.to_s)
-  if exe
+  if exe || $env.aliases.has_key?(m)
     system("#{$env.resolve_alias(m)}", *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super
