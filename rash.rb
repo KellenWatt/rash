@@ -171,13 +171,35 @@ def sourcesh(file)
   bash_source.call(file).each {|k,v| ENV[k] = v if k != "SHLVL" && k != "_"}
 end
 
+def which(command)
+  cmd = File.expand_path(command)
+  return cmd if File.executable?(cmd) && !File.directory?(cmd)
+  
+  exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |pt|
+    path = File.expand_path(pt)
+    exts.each do |ext|
+      exe = File.join(path, "#{command}#{ext}")
+      return exe if File.executable?(exe) && !File.directory?(exe)
+    end
+  end
+  nil
+end
+
 # Note that I defy convention and don't define `respond_to_missing?`. This
 # is because doing so as-is would involve running the command itself, which 
 # would be 1) probably very slow, and 2) potentially dangerous if the command 
 # has side effects.
+
+
 def self.method_missing(m, *args, &block) 
-  puts m
-  super if system("#{$env.resolve_alias(m)} #{args.join(" ")}").nil?
+  # puts m
+  exe = which(m.to_s)
+  if exe
+    system("#{$env.resolve_alias(m)}", *args.flat_map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+  else
+    super
+  end
 end
 
 require_relative "lib/redirection"
