@@ -149,16 +149,16 @@ def cd(dir=nil, *_junk)
   Dir.pwd
 end
 
-def run(filename)
-  exe = filename.chomp
-  if exe[0] != '/'
-    exe = "./#{exe}"
+def run(filename, *args)
+  exe = (filename.start_with?("/") ? filename : File.expand_path(filename.strip))
+  unless File.executable?(exe)
+    raise SystemCallError.new("No such executable file - #{exe}", Errno::ENOENT::Errno)
   end
-  `#{exe}`
+  system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
 end
 
 # Defines `bash` psuedo-compatibility. Filesystem effects happen like normal 
-# and environmentl changes are copied
+# and environmental variable changes are copied
 def sourcesh(file) 
   bash_env = lambda do |cmd = nil|
     tmpenv = `#{cmd + ';' if cmd} printenv`
@@ -196,7 +196,7 @@ def self.method_missing(m, *args, &block)
   # puts m
   exe = which(m.to_s)
   if exe
-    system("#{$env.resolve_alias(m)}", *args.flat_map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+    system("#{$env.resolve_alias(m)}", *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super
   end
