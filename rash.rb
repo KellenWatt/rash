@@ -176,6 +176,19 @@ def self.method_missing(m, *args, &block)
   super if system("#{$env.resolve_alias(m)} #{args.join(" ")}").nil?
 end
 
+
+# If you want to append, you need to get the file object yourself.
+def with_stdout_as(file = STDOUT)
+  $env.stdout = file
+  if block_given?
+    begin
+      yield
+    ensure
+      $env.reset_stdout
+    end
+  end
+end
+
 IRB.conf[:PROMPT][:RASH] = {
   :PROMPT_I => "rash   ",
   :PROMPT_N => "rash-n ",
