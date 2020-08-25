@@ -61,6 +61,7 @@ class Environment
   end
   
   def stdout=(file)
+    $stdout.flush
     case file
     when String
       $stdout = @stdout = File.new(file, "w")
@@ -75,10 +76,12 @@ class Environment
   end
 
   def reset_stdout
+    $stdout.flush
     $stdout = @stdout = DEFAULT_IO[:out]
   end
 
   def stderr=(file)
+    $stderr.flush
     case file
     when String
       $stderr = @stderr = File.new(file, "w")
@@ -93,13 +96,14 @@ class Environment
   end
   
   def reset_stderr
+    $stderr.flush
     $stderr = @stderr = DEFAULT_IO[:err]
   end
 
   def stdin=(file)
     case file
     when String
-      $stderr = @stderr = File.new(file, "r")
+      $stdin = @stdin = File.new(file, "r")
     when :in
       $stdin = @stdin = STDIN
     else
