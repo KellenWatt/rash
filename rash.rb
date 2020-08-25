@@ -205,6 +205,18 @@ def with_stderr_as(file = STDERR)
   end 
 end
 
+def with_stdin_as(file = STDIN)
+# needs block
+  $env.stdin = file
+  if block_given?
+    begin
+      yield
+    ensure
+      $env.reset_stdin
+    end
+  end
+end
+
 
 # IRB.conf[:PROMPT][:RASH] = {
 #   :PROMPT_I => "rash   ",
