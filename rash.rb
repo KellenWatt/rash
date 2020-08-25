@@ -52,67 +52,6 @@ class Environment
 
   # IO operations
 
-  def reset_io
-    reset_stdout
-    reset_stderr
-    reset_stdin
-  end
-  
-  def stdout=(file)
-    $stdout.flush
-    case file
-    when String
-      $stdout = File.new(file, "w")
-    when :out
-      $stdout = STDOUT
-    when :err
-      $stdout = STDERR
-    else
-      raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
-      $stdout = file
-    end
-  end
-
-  def reset_stdout
-    $stdout.flush
-    $stdout = DEFAULT_IO[:out]
-  end
-
-  def stderr=(file)
-    $stderr.flush
-    case file
-    when String
-      $stderr = File.new(file, "w")
-    when :out
-      $stderr = STDOUT
-    when :err
-      $stderr = STDERR
-    else
-      raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
-      $stderr = file
-    end
-  end
-  
-  def reset_stderr
-    $stderr.flush
-    $stderr = DEFAULT_IO[:err]
-  end
-
-  def stdin=(file)
-    case file
-    when String
-      $stdin = File.new(file, "r")
-    when :in
-      $stdin = STDIN
-    else
-      raise ArgumentError.new("not an input stream - #{file}") unless file.is_a?(IO)
-    end
-  end
-
-  def reset_stdin
-    $stdin = DEFAULT_IO[:in]
-  end
-
   private
 
   class Directory
