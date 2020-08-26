@@ -3,6 +3,7 @@ class Environment
   DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
 
   attr_accessor :prompt
+  attr_reader :aliasing_enabled
 
   def initialize
     @working_directory = Dir.home
@@ -166,9 +167,8 @@ end
 # Note that I defy convention and don't define `respond_to_missing?`. This
 # is because doing so screws with irb.
 def self.method_missing(m, *args, &block) 
-  # puts m
   exe = which(m.to_s)
-  if exe || $env.alias?(m)
+  if exe || ($env.alias?(m) && $env.aliasing_enabled)
     system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super
