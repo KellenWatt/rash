@@ -10,8 +10,7 @@
 simply was quickly shot to hell by the syntax of both languages. Solving that cleanly would have 
 amounted to writing a parser for multiple langauges at once that could automatically distinguish 
 between the two, but also treat them the same. Ruby's function-call syntax (one of the big reasons 
-using it as a shell might be handy) made this less than reasonable. 
-
+using it as a shell might be handy) made this less than reasonable. <br>
 I did have an idea for something that worked via Haskell-style currying to approximate bash syntax. 
 I explored this briefly, but I couldn't find a way for that to work without way more effort than 
 it's worth. Plus, it would significantly affect how Ruby works (i.e. most semantic expectations 
