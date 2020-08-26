@@ -46,11 +46,11 @@ class Environment
 
     result = [f]
     aliases = @aliases.dup
-    aliased = true
-    while aliased
-      aliased = false
+    found_alias = true
+    while found_alias
+      found_alias = false
       if aliases.has_key?(result[0].to_sym)
-        aliased = true
+        found_alias = true
         match = result[0].to_sym
         result[0] = aliases[match]
         aliases.delete(match)
