@@ -2,12 +2,13 @@ class Environment
   
   DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
 
-  attr_reader :aliases
   attr_accessor :prompt
+  attr_reader :aliasing_disabled
 
   def initialize
     @working_directory = Dir.home
     @aliases = Hash.new
+    @aliasing_disabled = false
     @prompt = {
       # Make this optionally a lambda or string
       # This works for affecting the string
@@ -21,34 +22,12 @@ class Environment
   end
 
   def method_missing(m, *args, &block) 
-    if args.length == 0 
-      self.define_singleton_method(m) do
-        ENV[__method__.to_s.upcase]
-      end
-      self.send(m)
+    if args.length == 0 && !block_given?
+      ENV[m.to_s.upcase]
     else
       super
     end
   end
-
-  def make_alias(new_func, old_func)
-    @aliases[new_func.to_sym] = old_func.to_sym
-  end
-
-  def clear_alias(func) 
-    @aliases.delete(func.to_sym)
-  end
-
-  # recursive aliases not currently possible. In the works
-  def resolve_alias(f)
-    al = f.to_sym
-    if @aliases.include?(al)
-      @aliases[al]
-    else
-      f
-    end
-  end
-  
 
   # IO operations
 
@@ -67,15 +46,16 @@ class Environment
       @path
     end
   end
-
-
 end
+require_relative "lib/redirection"
+require_relative "lib/aliasing"
+
 
 $env = Environment.new
 
 # note for later documentation: any aliases of cd must be functions, not 
 # environmental aliases. Limitation of implementation.
-def cd(dir=nil, *_junk)
+def cd(dir=nil)
   old = Dir.pwd
   if dir.nil? 
     $env.chdir(Dir.home)
@@ -126,16 +106,14 @@ end
 # Note that I defy convention and don't define `respond_to_missing?`. This
 # is because doing so screws with irb.
 def self.method_missing(m, *args, &block) 
-  # puts m
   exe = which(m.to_s)
-  if exe || $env.aliases.has_key?(m)
-    system("#{$env.resolve_alias(m)}", *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+  if exe || ($env.alias?(m) && !$env.aliasing_disabled)
+    system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super
   end
 end
 
-require_relative "lib/redirection"
 
 
 # IRB.conf[:PROMPT][:RASH] = {
