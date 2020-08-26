@@ -46,8 +46,6 @@ class Environment
       @path
     end
   end
-
-
 end
 require_relative "lib/redirection"
 require_relative "lib/aliasing"
