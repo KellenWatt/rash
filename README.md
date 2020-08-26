@@ -4,7 +4,7 @@
 ## FAQ
 
 **Q.** *This isn't POSIX or `bash` compliant.*<br>
-**A.**
+**A.** Two things:
 1. That's not a question.
 2. No, it isn't, and it's not supposed to be. Well it was supposed to be, but the idea of doing that 
 simply was quickly shot to hell by the syntax of both languages. Solving that cleanly would have 
