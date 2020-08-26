@@ -2,7 +2,6 @@ class Environment
   
   DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
 
-  attr_reader :aliases
   attr_accessor :prompt
 
   def initialize
@@ -33,7 +32,7 @@ class Environment
   end
 
   def make_alias(new_func, old_func)
-    @aliases[new_func.to_sym] = old_func.to_sym
+    @aliases[new_func.to_sym] = old_func.to_s.split(" ")
   end
 
   def clear_alias(func) 
@@ -42,14 +41,28 @@ class Environment
 
   # recursive aliases not currently possible. In the works
   def resolve_alias(f)
-    al = f.to_sym
-    if @aliases.include?(al)
-      @aliases[al]
-    else
-      f
+    return [f.to_s] unless @aliasing_enabled
+
+    result = [f]
+    aliases = @aliases.dup
+    aliased = true
+    while aliased
+      aliased = false
+      if aliases.has_key?(result[0].to_sym)
+        aliased = true
+        match = result[0].to_sym
+        result[0] = aliases[match]
+        aliases.delete(match)
+        result.flatten! 
+      end
     end
+    result
   end
-  
+ 
+  def alias?(f)
+    @aliases.has_key?(f.to_sym)
+  end
+
   def without_aliasing
     old_aliasing = @aliasing_enabled
     @aliasing_enabled = false
@@ -96,7 +109,6 @@ class Environment
 
 end
 require_relative "lib/redirection"
-require_relative "lib/aliasing"
 
 
 $env = Environment.new
@@ -156,8 +168,8 @@ end
 def self.method_missing(m, *args, &block) 
   # puts m
   exe = which(m.to_s)
-  if exe || $env.aliases.has_key?(m)
-    system("#{$env.resolve_alias(m)}", *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+  if exe || $env.alias?(m)
+    system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super
   end
