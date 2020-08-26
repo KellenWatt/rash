@@ -7,8 +7,10 @@ class Environment
 
   def initialize
     @working_directory = Dir.home
-    @aliases = Hash.new
+    @aliases = {}
     @aliasing_disabled = false
+    @active_jobs = []
+
     @prompt = {
       # Make this optionally a lambda or string
       # This works for affecting the string
@@ -49,7 +51,7 @@ class Environment
 end
 require_relative "lib/redirection"
 require_relative "lib/aliasing"
-
+require_relative "lib/jobcontrol"
 
 $env = Environment.new
 
