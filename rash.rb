@@ -57,7 +57,7 @@ $env = Environment.new
 
 # note for later documentation: any aliases of cd must be functions, not 
 # environmental aliases. Limitation of implementation.
-def cd(dir=nil, *_junk)
+def cd(dir=nil)
   old = Dir.pwd
   if dir.nil? 
     $env.chdir(Dir.home)
