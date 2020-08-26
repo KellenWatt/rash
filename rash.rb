@@ -22,11 +22,8 @@ class Environment
   end
 
   def method_missing(m, *args, &block) 
-    if args.length == 0 
-      self.define_singleton_method(m) do
-        ENV[__method__.to_s.upcase]
-      end
-      self.send(m)
+    if args.length == 0 && !block_given?
+      ENV[m.to_s.upcase]
     else
       super
     end
