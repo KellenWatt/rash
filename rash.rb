@@ -3,12 +3,12 @@ class Environment
   DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
 
   attr_accessor :prompt
-  attr_reader :aliasing_enabled
+  attr_reader :aliasing_disabled
 
   def initialize
     @working_directory = Dir.home
     @aliases = Hash.new
-    @aliasing_enabled = true
+    @aliasing_disabled = false
     @prompt = {
       # Make this optionally a lambda or string
       # This works for affecting the string
@@ -28,63 +28,6 @@ class Environment
       super
     end
   end
-
-  def make_alias(new_func, old_func)
-    @aliases[new_func.to_sym] = old_func.to_s.split(" ")
-  end
-
-  def clear_alias(func) 
-    @aliases.delete(func.to_sym)
-  end
-
-  # recursive aliases not currently possible. In the works
-  def resolve_alias(f)
-    return [f.to_s] unless @aliasing_enabled
-
-    result = [f]
-    aliases = @aliases.dup
-    found_alias = true
-    while found_alias
-      found_alias = false
-      if aliases.has_key?(result[0].to_sym)
-        found_alias = true
-        match = result[0].to_sym
-        result[0] = aliases[match]
-        aliases.delete(match)
-        result.flatten! 
-      end
-    end
-    result
-  end
- 
-  def alias?(f)
-    @aliases.has_key?(f.to_sym)
-  end
-
-  def without_aliasing
-    old_aliasing = @aliasing_enabled
-    @aliasing_enabled = false
-    if block_given?
-      begin
-        yield
-      ensure
-        @aliasing_enabled = old_aliasing
-      end
-    end
-  end
-
-  def with_aliasing
-    old_aliasing = @aliasing_enabled
-    @aliasing_enabled = true
-    if block_given?
-      begin
-        yield
-      ensure
-        @aliasing_enabled = old_aliasing
-      end
-    end
-  end
-
 
   # IO operations
 
@@ -107,6 +50,7 @@ class Environment
 
 end
 require_relative "lib/redirection"
+require_relative "lib/aliasing"
 
 
 $env = Environment.new
@@ -165,7 +109,7 @@ end
 # is because doing so screws with irb.
 def self.method_missing(m, *args, &block) 
   exe = which(m.to_s)
-  if exe || ($env.alias?(m) && $env.aliasing_enabled)
+  if exe || ($env.alias?(m) && !$env.aliasing_disabled)
     system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super
