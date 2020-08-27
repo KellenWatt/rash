@@ -61,5 +61,3 @@ class Environment
     IRB.conf[:PROMPT_MODE] = :RASH
   end
 end
-
-
