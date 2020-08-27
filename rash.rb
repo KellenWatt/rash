@@ -20,10 +20,20 @@ class Environment
     Dir.chdir(dir)
     @working_directory = Dir.pwd
   end
+  
+  def add_path(path) 
+    if path.respond_to?(:path)
+      ENV["PATH"] += File::PATH_SEPARATOR + path.path
+    else
+      ENV["PATH"] += File::PATH_SEPARATOR + path.to_s
+    end
+  end
 
   def method_missing(m, *args, &block) 
     if args.length == 0 && !block_given?
       ENV[m.to_s.upcase]
+    elsif m.to_s[-1] == "=" && args.length == 1  && !block_given?
+      ENV[m.to_s.upcase.delete_suffix("=")] = args[0].to_s
     else
       super
     end
