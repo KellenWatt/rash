@@ -2,7 +2,6 @@ class Environment
   
   DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
 
-  attr_accessor :prompt
   attr_reader :aliasing_disabled
 
   def initialize
@@ -15,7 +14,9 @@ class Environment
       # Make this optionally a lambda or string
       # This works for affecting the string
       # :PROMPT_I => "%N(%m):%03n:%i %~> ".tap {|s| def s.dup; gsub('%~', Dir.pwd); end },
+      RETURN: "%s\n"
     }
+    ENV["RASHDIR"] = File.dirname(__FILE__)
   end
 
   def chdir(dir)
@@ -30,8 +31,6 @@ class Environment
       super
     end
   end
-
-  # IO operations
 
   private
 
@@ -62,7 +61,7 @@ def cd(dir=nil)
   if dir.nil? 
     $env.chdir(Dir.home)
   else
-    $env.chdir(dir)
+    $env.chdir(dir.to_s)
   end
   ENV["OLDPWD"] = old
   Dir.pwd
@@ -129,6 +128,7 @@ end
 # IRB.conf[:SAVE_HISTORY] = 1000
 # IRB.conf[:AP_NAME] = "rash"
 
+
 run_command_file = "#{$env.HOME}/.rashrc"
-require_relative run_command_file if File.file?(run_command_file)
+load run_command_file if File.file?(run_command_file)
 
