@@ -11,9 +11,6 @@ class Environment
     @active_jobs = []
 
     @prompt = {
-      # Make this optionally a lambda or string
-      # This works for affecting the string
-      # :PROMPT_I => "%N(%m):%03n:%i %~> ".tap {|s| def s.dup; gsub('%~', Dir.pwd); end },
       RETURN: "%s\n"
     }
     ENV["RASHDIR"] = File.dirname(__FILE__)
