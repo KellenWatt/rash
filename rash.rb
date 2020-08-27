@@ -1,7 +1,5 @@
 class Environment
   
-  DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
-
   attr_reader :aliasing_disabled
 
   def initialize

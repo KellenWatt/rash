@@ -1,4 +1,7 @@
 class Environment
+
+  DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
+
   def reset_io
     reset_stdout
     reset_stderr
