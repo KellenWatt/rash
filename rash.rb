@@ -14,9 +14,15 @@ class Environment
     ENV["RASHDIR"] = File.dirname(__FILE__)
   end
 
-  def chdir(dir)
-    Dir.chdir(dir)
-    @working_directory = Dir.pwd
+  def chdir(dir = nil)
+    old = @working_directory
+    if dir.nil?
+      Dir.chdir
+    else
+      Dir.chdir(dir.to_s)
+    end
+    ENV["OLDPWD"] = old
+    @working_directory = dir.to_s
   end
   
   def add_path(path) 
@@ -61,15 +67,8 @@ $env = Environment.new
 
 # note for later documentation: any aliases of cd must be functions, not 
 # environmental aliases. Limitation of implementation.
-def cd(dir=nil)
-  old = Dir.pwd
-  if dir.nil? 
-    $env.chdir(Dir.home)
-  else
-    $env.chdir(dir.to_s)
-  end
-  ENV["OLDPWD"] = old
-  Dir.pwd
+def cd(dir = nil)
+  $env.chdir(dir)
 end
 
 def run(filename, *args)
