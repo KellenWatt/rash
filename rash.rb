@@ -3,8 +3,6 @@ class Environment
   
   attr_reader :aliasing_disabled
 
-  attr_reader :working_directory
-
   def initialize
     @working_directory = Directory.root("/") 
     traverse_filetree("/", Dir.pwd)
@@ -31,11 +29,7 @@ class Environment
   end
   
   def add_path(path) 
-    if path.respond_to?(:path)
-      ENV["PATH"] += File::PATH_SEPARATOR + path.path
-    else
-      ENV["PATH"] += File::PATH_SEPARATOR + path.to_s
-    end
+    ENV["PATH"] += File::PATH_SEPARATOR + (path.respond_to?(:path) ? path.path : path.to_s)
   end
 
   def method_missing(m, *args, &block) 
