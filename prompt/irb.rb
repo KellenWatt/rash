@@ -57,20 +57,23 @@ class Environment
   end
 
   def use_irb_prompt
-    IRB.conf[:PROMPT][:RASH] = @prompt
-    IRB.conf[:PROMPT_MODE] = :RASH
+    if $0 == "irb"
+      IRB.conf[:PROMPT][:RASH] = @prompt
+      IRB.conf[:PROMPT_MODE] = :RASH
+    end
   end
 end
 
-IRB.conf[:PROMPT][:RASH] = {
-  :PROMPT_I => "rash $",
-  :PROMPT_N => "rash ",
-  :PROMPT_S => "rash%l>",
-  :PROMPT_C => "rash >",
-  :RETURN => "%s\n" # used to printf
-}
-IRB.conf[:PROMPT_MODE] = :RASH
-IRB.conf[:SAVE_HISTORY] = 1000
-IRB.conf[:AP_NAME] = "rash"
-
+if $0 == "irb"
+  IRB.conf[:PROMPT][:RASH] = {
+    :PROMPT_I => "rash $",
+    :PROMPT_N => "rash ",
+    :PROMPT_S => "rash%l>",
+    :PROMPT_C => "rash >",
+    :RETURN => "%s\n" # used to printf
+  }
+  IRB.conf[:PROMPT_MODE] = :RASH
+  IRB.conf[:SAVE_HISTORY] = 1000
+  IRB.conf[:AP_NAME] = "rash"
+end
 

@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+if [ "$#" -eq 0 ] ; then
+    irb -r "../rash.rb"
+else
+    ruby -r "../rash.rb" $@
+fi

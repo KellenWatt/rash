@@ -68,7 +68,8 @@ def cd(dir = nil)
 end
 
 
-def run(filename, *args)
+def run(file, *args)
+  filename = file.to_s
   exe = (filename.start_with?("/") ? filename : File.expand_path(filename.strip))
   unless File.executable?(exe)
     raise SystemCallError.new("No such executable file - #{exe}", Errno::ENOENT::Errno)
