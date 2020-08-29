@@ -48,6 +48,7 @@ class Environment
     @active_jobs = []
 
     @prompt = {
+      AUTO_INDENT: true,
       RETURN: ""
     }
     ENV["RASHDIR"] = File.dirname(__FILE__)

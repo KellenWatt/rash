@@ -75,5 +75,6 @@ if $0 == "irb"
   IRB.conf[:PROMPT_MODE] = :RASH
   IRB.conf[:SAVE_HISTORY] = 1000
   IRB.conf[:AP_NAME] = "rash"
+  IRB.conf[:AUTO_INDENT] = true
 end
 
