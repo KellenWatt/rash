@@ -35,18 +35,19 @@ caller
 command
 mapfile
     - readarray
-source - eval
 
 ### Complex
 option parser - OptionParser.parse(args)
     - shift
 ulimit
 
-job control
 completion
 
-File system pseudo-emulation. Class for each directory, which can take custom
-defined methods. 
+As a later feature, some local functions may be marked as non-inherited, in which 
+case the only place they will be available is where they are declared.
+
+
+
 -->
 
 <!--
@@ -54,7 +55,4 @@ defined methods.
 explicitly ignoring directory stack (pushd, popd, dirs). But maybe not
 
 explicitly ignoring readonly, as it goes against Ruby variable philosophy
-
-
-
 -->
