@@ -54,8 +54,8 @@ class Environment
       # rashrc_local = @working_directory.to_s + File::SEPARATOR + RASH_LOCAL_FILE
       load RASH_LOCAL_FILE if File.exists?(RASH_LOCAL_FILE) && !File.directory?(RASH_LOCAL_FILE)
     end
-
-
+  
+    Dir.pwd
   end
 
   class Directory
