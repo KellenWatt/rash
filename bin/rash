@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 if [ "$#" -eq 0 ] ; then
-    irb -r "../rash.rb"
+    irb -r rash
 else
-    ruby -r "../rash.rb" $@
+    ruby -r rash $@
 fi

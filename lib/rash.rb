@@ -55,9 +55,9 @@ class Environment
   end
 end
 
-require_relative "lib/redirection"
-require_relative "lib/aliasing"
-require_relative "lib/jobcontrol"
+require_relative "rash/redirection"
+require_relative "rash/aliasing"
+require_relative "rash/jobcontrol"
 
 $env = Environment.new
 
