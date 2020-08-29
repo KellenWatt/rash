@@ -1,9 +1,14 @@
+require_relative "lib/filesystem"
 class Environment
   
   attr_reader :aliasing_disabled
 
+  attr_reader :working_directory
+
   def initialize
-    @working_directory = Dir.home
+    @working_directory = Directory.root("/") 
+    traverse_filetree("/", Dir.pwd)
+    
     @aliases = {}
     @aliasing_disabled = false
     @active_jobs = []
@@ -17,12 +22,12 @@ class Environment
   def chdir(dir = nil)
     old = @working_directory
     if dir.nil?
-      Dir.chdir
+      traverse_filetree(Dir.pwd, "~")
     else
-      Dir.chdir(dir.to_s)
+      traverse_filetree(Dir.pwd, dir.to_s)
     end
-    ENV["OLDPWD"] = old
-    @working_directory = dir.to_s
+    ENV["OLDPWD"] = old.to_s
+    Dir.pwd
   end
   
   def add_path(path) 
@@ -42,34 +47,21 @@ class Environment
       super
     end
   end
-
-  private
-
-  class Directory
-    def initialize(path)
-      @path = path
-    end
-
-    def add_local_method(name, &block)
-      self.define_method(name, &block)
-    end
-
-    def to_s
-      @path
-    end
-  end
 end
+
 require_relative "lib/redirection"
 require_relative "lib/aliasing"
 require_relative "lib/jobcontrol"
 
 $env = Environment.new
 
+
 # note for later documentation: any aliases of cd must be functions, not 
 # environmental aliases. Limitation of implementation.
 def cd(dir = nil)
   $env.chdir(dir)
 end
+
 
 def run(filename, *args)
   exe = (filename.start_with?("/") ? filename : File.expand_path(filename.strip))
@@ -78,6 +70,7 @@ def run(filename, *args)
   end
   system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
 end
+
 
 # Defines `bash` psuedo-compatibility. Filesystem effects happen like normal 
 # and environmental variable changes are copied
@@ -92,6 +85,7 @@ def sourcesh(file)
 
   bash_source.call(file).each {|k,v| ENV[k] = v if k != "SHLVL" && k != "_"}
 end
+
 
 def which(command)
   cmd = File.expand_path(command)
@@ -108,11 +102,14 @@ def which(command)
   nil
 end
 
+
 # Note that I defy convention and don't define `respond_to_missing?`. This
 # is because doing so screws with irb.
 def self.method_missing(m, *args, &block) 
   exe = which(m.to_s)
-  if exe || ($env.alias?(m) && !$env.aliasing_disabled)
+  if $env.local_method?(m)
+    $env.local_call(m, *args, &block)
+  elsif exe || ($env.alias?(m) && !$env.aliasing_disabled)
     system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super
@@ -120,7 +117,5 @@ def self.method_missing(m, *args, &block)
 end
 
 
-
 run_command_file = "#{$env.HOME}/.rashrc"
 load run_command_file if File.file?(run_command_file)
-
