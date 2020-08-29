@@ -1,10 +1,9 @@
 class Environment
   
   attr_reader :aliasing_disabled
+  attr_reader :superuser_mode
 
   def initialize
-    # @working_directory = Directory.root("/") 
-    # traverse_filetree("/", Dir.pwd)
     common_init
   end
 
@@ -30,6 +29,15 @@ class Environment
     end
   end
 
+  def as_superuser(&block)
+    @superuser_mode = true
+    begin
+      block.call
+    ensure
+      @superuser_mode = false
+    end
+  end
+  
   private
 
   def common_init
@@ -40,7 +48,7 @@ class Environment
     @active_jobs = []
 
     @prompt = {
-      RETURN: "%s\n"
+      RETURN: ""
     }
     ENV["RASHDIR"] = File.dirname(__FILE__)
   end
@@ -105,7 +113,11 @@ end
 def self.method_missing(m, *args, &block) 
   exe = which(m.to_s)
   if exe || ($env.alias?(m) && !$env.aliasing_disabled)
-    system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+    if $env.superuser_mode
+      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin}) 
+    else
+      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+    end
   else
     super
   end

@@ -31,16 +31,8 @@ directory-local functions, which is extremely useful for a variety of applicatio
 
 <!--
 TODO:
-caller
-command
-mapfile
-    - readarray
 
 ### Complex
-option parser - OptionParser.parse(args)
-    - shift
-ulimit
-
 completion
 
 As a later feature, some local functions may be marked as non-inherited, in which 

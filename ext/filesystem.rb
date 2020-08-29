@@ -125,7 +125,11 @@ def self.method_missing(m, *args, &block)
   if $env.local_method?(m)
     $env.local_call(m, *args, &block)
   elsif exe || ($env.alias?(m) && !$env.aliasing_disabled)
-    system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+    if $env.superuser_mode
+      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+    else
+      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+    end
   else
     super
   end
