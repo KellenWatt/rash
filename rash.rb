@@ -1,4 +1,3 @@
-require_relative "lib/filesystem"
 class Environment
   
   attr_reader :aliasing_disabled
@@ -11,13 +10,8 @@ class Environment
 
   def chdir(dir = nil)
     old = @working_directory
-    if dir.nil?
-      Dir.chdir("~")
-      @working_directory = ENV["HOME"]
-    else
-      Dir.chdir(dir.to_s)
-      @working_directory = Dir.pwd
-    end
+    Dir.chdir(dir.nil? ? "~" : dir.to_s)
+    @working_directory = Dir.pwd
     ENV["OLDPWD"] = old.to_s
     Dir.pwd
   end
@@ -110,9 +104,7 @@ end
 # is because doing so screws with irb.
 def self.method_missing(m, *args, &block) 
   exe = which(m.to_s)
-  if $env.local_method?(m)
-    $env.local_call(m, *args, &block)
-  elsif exe || ($env.alias?(m) && !$env.aliasing_disabled)
+  if exe || ($env.alias?(m) && !$env.aliasing_disabled)
     system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
   else
     super

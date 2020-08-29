@@ -8,6 +8,13 @@ class Environment
     traverse_filetree("/", Dir.pwd)
   end
 
+  def chdir(dir = nil)
+    old = @working_directory
+    traverse_filetree(Dir.pwd, (dir.nil? ? "~" : dir.to_s))
+    ENV["OLDPWD"] = old.to_s
+    Dir.pwd
+  end
+
   def local_def(name, &block)
     @working_directory.add_local_method(name.to_sym, &block)
   end
@@ -112,3 +119,16 @@ class Environment
     end
   end
 end
+
+def self.method_missing(m, *args, &block)
+  exe = which(m.to_s)
+  if $env.local_method?(m)
+    $env.local_call(m, *args, &block)
+  elsif exe || ($env.alias?(m) && !$env.aliasing_disabled)
+    system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+  else
+    super
+  end
+end
+
+$env = Environment.new
