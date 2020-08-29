@@ -6,25 +6,19 @@ class Environment
   attr_reader :working_directory
 
   def initialize
-    @working_directory = Directory.root("/") 
-    traverse_filetree("/", Dir.pwd)
-    
-    @aliases = {}
-    @aliasing_disabled = false
-    @active_jobs = []
-
-    @prompt = {
-      RETURN: "%s\n"
-    }
-    ENV["RASHDIR"] = File.dirname(__FILE__)
+    # @working_directory = Directory.root("/") 
+    # traverse_filetree("/", Dir.pwd)
+    common_init
   end
 
   def chdir(dir = nil)
     old = @working_directory
     if dir.nil?
-      traverse_filetree(Dir.pwd, "~")
+      Dir.chdir("~")
+      @working_directory = ENV["HOME"]
     else
-      traverse_filetree(Dir.pwd, dir.to_s)
+      Dir.chdir(dir.to_s)
+      @working_directory = Dir.pwd
     end
     ENV["OLDPWD"] = old.to_s
     Dir.pwd
@@ -46,6 +40,21 @@ class Environment
     else
       super
     end
+  end
+
+  private
+
+  def common_init
+    @working_directory = Dir.pwd
+
+    @aliases = {}
+    @aliasing_disabled = false
+    @active_jobs = []
+
+    @prompt = {
+      RETURN: "%s\n"
+    }
+    ENV["RASHDIR"] = File.dirname(__FILE__)
   end
 end
 

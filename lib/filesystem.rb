@@ -2,6 +2,12 @@ class Environment
 
   RASH_LOCAL_FILE = ".rashrc.local"
 
+  def initialize
+    common_init
+    @working_directory = Directory.root("/") 
+    traverse_filetree("/", Dir.pwd)
+  end
+
   def local_def(name, &block)
     @working_directory.add_local_method(name.to_sym, &block)
   end
@@ -19,6 +25,8 @@ class Environment
   end
 
   private
+
+  LOCAL_FUNCTIONS_ENABLED = true
 
   # from and to are strings
   def traverse_filetree(from, to)
