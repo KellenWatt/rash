@@ -7,9 +7,10 @@ class Environment
     reset_stderr
     reset_stdin
   end
-  
+
   def stdout=(file)
     $stdout.flush
+    old_stdout = $stdout
     case file
     when String
       $stdout = File.new(file, "w")
@@ -21,15 +22,18 @@ class Environment
       raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
       $stdout = file
     end
+    old_stdout.close unless standard_stream?(old_stdout)
   end
 
   def reset_stdout
     $stdout.flush
+    $stdout.close unless standard_stream?($stdout)
     $stdout = DEFAULT_IO[:out]
   end
 
   def stderr=(file)
     $stderr.flush
+    old_stderr = $stderr
     case file
     when String
       $stderr = File.new(file, "w")
@@ -41,14 +45,17 @@ class Environment
       raise ArgumentError.new("not an output stream - #{file}") unless file.is_a?(IO)
       $stderr = file
     end
+    old_stderr.close unless standard_stream?(old_stderr)
   end
   
   def reset_stderr
     $stderr.flush
+    $stderr.close unless standard_stream?($stderr)
     $stderr = DEFAULT_IO[:err]
   end
 
   def stdin=(file)
+    old_stdin = $stdin
     case file
     when String
       $stdin = File.new(file, "r")
@@ -56,11 +63,20 @@ class Environment
       $stdin = STDIN
     else
       raise ArgumentError.new("not an input stream - #{file}") unless file.is_a?(IO)
+      $stdin = file
     end
+    old_stdin.close unless standard_stream?(old_stdin)
   end
 
   def reset_stdin
+    $stdin.close unless standard_stream>($stdin)
     $stdin = DEFAULT_IO[:in]
+  end
+
+  private
+  
+  def standard_stream?(f)
+    DEFAULT_IO.values.include?(f)
   end
 end
 
