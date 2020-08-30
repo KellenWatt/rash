@@ -1,7 +1,7 @@
 # Rash: Ruby-Assimilated Shell
-## *or* Rash Ain't sh
+### *or* Rash Ain't sh
 
-## What is this?
+## What is Rash?
 
 It's pretty much in the titles. Rash is a command shell, but it's only distantly 
 related to sh or any of its descendants. Instead it's designed to work within 
