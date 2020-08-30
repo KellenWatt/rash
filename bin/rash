@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-if ARGV.size == 0
-  exec("irb", "-r", "rash")
-else
+if ARGV[0].end_with?(".rb", ".rh")
   require "rash"
   file = ARGV.shift
   load file
+else
+  exec("irb", "-r", "rash", *ARGV)
 end
