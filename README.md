@@ -42,6 +42,11 @@ is valid, it would be preferred over the executable file.
 Note that this has no effect on methods declared on objects or classes that aren't 
 `Object`, `Kernel`, or the irb `"main"` object.
 
+## Requirements
+
+- `irb (~> 1.2)` - not actually used directly in core Rash but it ensures the user has 
+IRB installed. This is only required for interactive mode, which uses IRB by default.
+
 ## FAQ
 
 **Q.** *This isn't POSIX or `bash` compliant.*<br>
