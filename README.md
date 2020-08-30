@@ -89,3 +89,8 @@ explicitly ignoring directory stack (pushd, popd, dirs). But maybe not
 
 explicitly ignoring readonly, as it goes against Ruby variable philosophy
 -->
+# rash: Ruby Assimilated Shell
+#### --OR-- Rash Ain't sh
+
+## What is this?
+
