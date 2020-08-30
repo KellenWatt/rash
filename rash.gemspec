@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
     "lib/rash/prompt/irb.rb",
     "lib/rash/ext/filesystem.rb"
   ]
-  s.add_runtime_dependency("irb", "~> 1.2", ">= 1.2.0")
+  s.add_runtime_dependency("irb", "~> 1.2")
 
   s.bindir = "bin"
   s.executables << "rash"
