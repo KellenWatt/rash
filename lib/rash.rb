@@ -78,6 +78,7 @@ def run(file, *args)
   system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
 end
 
+alias cmd send
 
 # Defines `bash` psuedo-compatibility. Filesystem effects happen like normal 
 # and environmental variable changes are copied
