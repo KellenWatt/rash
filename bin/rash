@@ -1,7 +1,11 @@
-#!/usr/bin/env sh
+#!/usr/bin/env ruby
 
-if [ "$#" -eq 0 ] ; then
-    irb -r rash
+require "rash"
+require "irb"
+
+if ARGV.size == 0
+  Irb.start
 else
-    ruby -r rash $@
-fi
+  file = ARGV.shift
+  load file
+end
