@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby
 
-if ARGV[0].end_with?(".rb", ".rh")
+if ARGV.empty?
+  exec("irb", "-r", "rash", *ARGV)
+elsif File.exists?(ARGV[0]) && !File.directory?(ARGV[0])
   require "rash"
   file = ARGV.shift
   load file
 else
-  exec("irb", "-r", "rash", *ARGV)
+  $stderr.puts "#{File.basename($0)}: #{ARGV[0]}: No such file or directory"
+  exit 1
 end
