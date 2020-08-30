@@ -1,11 +1,9 @@
 #!/usr/bin/env ruby
 
-require "rash"
-require "irb"
-
 if ARGV.size == 0
-  Irb.start
+  exec("irb", "-r", "rash")
 else
+  require "rash"
   file = ARGV.shift
   load file
 end
