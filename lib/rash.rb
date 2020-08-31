@@ -65,7 +65,12 @@ $env = Environment.new
 # note for later documentation: any aliases of cd must be functions, not 
 # environmental aliases. Limitation of implementation.
 def cd(dir = nil)
-  $env.chdir(dir)
+  d = dir
+  case d
+  when File, Dir
+    d = d.path if File.directory?(d.path)
+  end
+  $env.chdir(d)
 end
 
 
