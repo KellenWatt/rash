@@ -39,8 +39,8 @@ class Environment
   def traverse_filetree(from, to)
     abs_from = File.expand_path(from)
     abs_to = File.expand_path(to)
-    raise SystemCallError(from, Errno::ENOENT::Errno) unless Dir.exists?(abs_from) 
-    raise SystemCallError(to, Errno::ENOENT::Errno) unless Dir.exists?(abs_to)
+    raise SystemCallError.new(from, Errno::ENOENT::Errno) unless Dir.exists?(abs_from) 
+    raise SystemCallError.new(to, Errno::ENOENT::Errno) unless Dir.exists?(abs_to)
     
     from_parts = (abs_from == "/" ? [""] : abs_from.split(File::SEPARATOR))
     to_parts = (abs_to == "/" ? [""] : abs_to.split(File::SEPARATOR))
