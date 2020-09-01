@@ -83,7 +83,7 @@ def run(file, *args)
   system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
 end
 
-alias cmd send
+alias cmd __send__
 
 # Defines `bash` psuedo-compatibility. Filesystem effects happen like normal 
 # and environmental variable changes are copied
@@ -122,7 +122,7 @@ def self.method_missing(m, *args, &block)
   exe = which(m.to_s)
   if exe || ($env.alias?(m) && !$env.aliasing_disabled)
     if $env.superuser_mode
-      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin}) 
+      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, exception: true}) 
     else
       system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
     end
