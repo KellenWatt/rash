@@ -68,6 +68,11 @@ pure Ruby script, but `.rb` is perfectly acceptable. If you use `.rb` for a Rash
 script, you may want to write a note that distinguishes it from a normal Ruby 
 script, if applicable.
 
+## Documentation
+In lieu of normal documentation, Rash is documented using the GitHub 
+[wiki](https://github.com/KellenWatt/rash/wiki). At present, there are tentative 
+plans to document the code directly, but this is low-priority.
+
 ## Contributing
 Bug reports and pull requests are welcome on [GitHub](https://github.com/KellenWatt/rash).
 
@@ -92,47 +97,5 @@ fundamental, semantic level.
 
 If a design arises at some point that is both Bash and Ruby compliant, I'll consider 
 moving towards that, but until then, that's a dead idea.
-
-
-
-### Naming
-
-When a name is resolved at global level, it has the following precedence
-1. Ruby-defined names. This includes Ruby keywords, and any functions defined 
-on `Kernel` and `Object`.
-2. Locally-defined functions
-3. Environment-defined aliases (as opposed to Ruby-defined aliases)
-4. Executable files in `$PATH`
-
-For example, OSX platforms have the `say` executable, which outputs the given text 
-through the speaker. If I typed `say` in the shell, it would first check if there 
-was a globally-defined function called `say`. Failing that, it would check for a 
-local function. If neither of those exist, it checks if it is an Environment-defined 
-alias. Once it is determined that it's none of those, we search for a `say` 
-executable in `$PATH`. The shell finds this, and executes it with the given arguments.
-
-If I were to define a local function called `say`, then, in the scope that function 
-is valid, it would be preferred over the executable file.
-
-Note that this has no effect on methods declared on objects or classes that aren't 
-`Object`, `Kernel`, or the irb `"main"` object.
 -->
 
-
-
-
-
-<!--
-TODO:
-
-### Complex
-completion
-
--->
-
-<!--
-### Design decisions
-explicitly ignoring directory stack (pushd, popd, dirs). But maybe not
-
-explicitly ignoring readonly, as it goes against Ruby variable philosophy
--->
