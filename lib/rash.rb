@@ -2,7 +2,7 @@ class Environment
   
   attr_reader :aliasing_disabled
   attr_reader :superuser_mode
-  attr_accessor :umask
+  attr_reader :umask
 
   def initialize
     common_init
@@ -37,6 +37,11 @@ class Environment
     ensure
       @superuser_mode = false
     end
+  end
+
+  def umask=(mask)
+    File.umask(mask)
+    @umask = mask
   end
   
   private
