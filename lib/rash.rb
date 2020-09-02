@@ -29,6 +29,11 @@ class Environment
       super
     end
   end
+  
+  def umask=(mask)
+    File.umask(mask)
+    @umask = mask
+  end
 
   def as_superuser(&block)
     @superuser_mode = true
@@ -39,16 +44,23 @@ class Environment
     end
   end
 
-  def umask=(mask)
-    File.umask(mask)
-    @umask = mask
+  def with_limits(limits, &block)
+    if block_given?
+      pid = fork do
+        limits.each {|resource, limit| Process.setrlimit(resource, *limit)}
+        block.call
+        exit!(true)
+      end
+      Process.wait(pid)
+    else
+      limits.each {|resource, limit| Process.setrlimit(resource, *limit)}
+    end
   end
-  
+
   private
 
   def common_init
     @working_directory = Dir.pwd
-
     @umask = File.umask
 
     @aliases = {}
