@@ -2,6 +2,7 @@ class Environment
   
   attr_reader :aliasing_disabled
   attr_reader :superuser_mode
+  attr_accessor :umask
 
   def initialize
     common_init
@@ -43,6 +44,8 @@ class Environment
   def common_init
     @working_directory = Dir.pwd
 
+    @umask = File.umask
+
     @aliases = {}
     @aliasing_disabled = false
     @active_jobs = []
@@ -80,7 +83,7 @@ def run(file, *args)
   unless File.executable?(exe)
     raise SystemCallError.new("No such executable file - #{exe}", Errno::ENOENT::Errno)
   end
-  system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+  system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
 end
 
 alias cmd __send__
@@ -122,9 +125,9 @@ def self.method_missing(m, *args, &block)
   exe = which(m.to_s)
   if exe || ($env.alias?(m) && !$env.aliasing_disabled)
     if $env.superuser_mode
-      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, exception: true}) 
+      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, exception: true, umask: $env.umask}) 
     else
-      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin})
+      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
     end
   else
     super
