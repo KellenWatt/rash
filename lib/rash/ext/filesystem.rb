@@ -2,6 +2,7 @@ class Environment
 
   RASH_LOCAL_FILE = ".rashrc.local"
 
+  # Has to be a better way of adding extensions and dynamically loading them
   def initialize
     common_init
     @working_directory = Directory.root("/") 
@@ -32,8 +33,6 @@ class Environment
   end
 
   private
-
-  LOCAL_FUNCTIONS_ENABLED = true
 
   # from and to are strings
   def traverse_filetree(from, to)
@@ -120,16 +119,13 @@ class Environment
   end
 end
 
+# still could absolutely be more cleaned up, but it works
 def self.method_missing(m, *args, &block)
   exe = which(m.to_s)
   if $env.local_method?(m)
     $env.local_call(m, *args, &block)
   elsif exe || ($env.alias?(m) && !$env.aliasing_disabled)
-    if $env.superuser_mode
-      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, exception: true, umask: $env.umask})
-    else
-      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
-    end
+    $env.dispatch(m, *args)
   else
     super
   end
