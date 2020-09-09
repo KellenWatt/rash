@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "rash-command-shell"
-  s.version = "0.1.3"
+  s.version = "0.2.0"
   s.date = "2020-08-29"
   s.summary = "Rash Ain't SH"
   s.description = "A Ruby-based shell"
@@ -13,7 +13,8 @@ Gem::Specification.new do |s|
     "lib/rash/jobcontrol.rb",
     "lib/rash/redirection.rb",
     "lib/rash/prompt/irb.rb",
-    "lib/rash/ext/filesystem.rb"
+    "lib/rash/ext/filesystem.rb",
+    "lib/rash/pipeline.rb"
   ]
   s.add_runtime_dependency("irb", "~> 1.2")
 
