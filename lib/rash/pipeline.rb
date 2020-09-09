@@ -15,7 +15,7 @@ class Environment
     nil
   end
   
-  def as_pipe(&block)
+  def as_pipe_command(&block)
     raise IOError.new("pipelining not enabled") unless @in_pipeline
     
     input = (@active_pipelines.empty? ? $stdin : @active_pipelines.last.reader)
