@@ -67,6 +67,8 @@ class Environment
     @aliasing_disabled = false
     @active_jobs = []
 
+    @active_pipelines = []
+
     @prompt = {
       AUTO_INDENT: true,
       RETURN: ""

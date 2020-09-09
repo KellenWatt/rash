@@ -14,7 +14,9 @@ class Environment
       Process.wait(@active_pipelines.last.pid)
       @active_pipelines.last.writer.close # probably redundant, but leaving it for now
       IO.copy_stream(@active_pipelines.last.reader, $stdout)
-      @active_pipelines.reverse_each {|pipe| pipe.terminate}.clear
+      @active_pipelines.pop.close
+      @active_pipelines.reverse_each {|pipe| pipe.terminate}
+      @active_pipelines.clear
     end
   end
 
@@ -24,7 +26,7 @@ class Environment
     output = @active_pipelines.last.writer
     error = ($stderr == $stdout ? output : $stderr)
     pid = fork do # might not be necessary, spawn might cover it. Not risking it before testing
-      system(*$env.resolve_alias(m), args.flatten.map{|a| a.to_s}, {out: output, in: input, err: error, exception: true, umask: @umask})
+      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: output, in: input, err: error, exception: true, umask: @umask})
       output.close
       exit!(true)
     end
@@ -64,11 +66,20 @@ class Environment
       self
     end
 
-    def terminate
+    def close
       @writer.close
       @reader.close
+    end
+
+    def terminate
+      self.close
       Process.kill(:PIPE, @pid)
       Process.wait(@pid)
+    end
+
+    def to_s
+      @pid
+    end
   end
 end
 
