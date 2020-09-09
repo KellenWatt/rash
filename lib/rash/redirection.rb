@@ -1,7 +1,5 @@
 class Environment
 
-  DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
-
   def reset_io
     reset_stdout
     reset_stderr
@@ -78,6 +76,10 @@ class Environment
   def standard_stream?(f)
     DEFAULT_IO.values.include?(f)
   end
+  
+  private
+
+  DEFAULT_IO = {in: STDIN, out: STDOUT, err: STDERR}
 end
 
 # If you want to append, you need to get the file object yourself.
