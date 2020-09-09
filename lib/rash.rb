@@ -78,6 +78,7 @@ end
 require_relative "rash/redirection"
 require_relative "rash/aliasing"
 require_relative "rash/jobcontrol"
+require_relative "rash/pipeline"
 
 $env = Environment.new
 
@@ -138,11 +139,14 @@ end
 
 # Note that I defy convention and don't define `respond_to_missing?`. This
 # is because doing so screws with irb.
+# This code is a nightmarish monstrosity. I need some kind of "dispatch" method on Environment
 def self.method_missing(m, *args, &block) 
   exe = which(m.to_s)
   if exe || ($env.alias?(m) && !$env.aliasing_disabled)
     if $env.superuser_mode
       system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, exception: true, umask: $env.umask}) 
+    elsif $env.pipelined? # implicitly disallowing superuser_mode for now. Need to refactor to allow
+      $env.add_pipeline(m, *args)
     else
       system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
     end
