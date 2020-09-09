@@ -39,8 +39,9 @@ IRB installed. This is only required for interactive mode, which uses IRB by def
 
 ## Usage 
 
-Like most shell programs it can be run in execution and interactive modes. For 
-details on how to use Rash's features, see the [wiki](https://github.com/KellenWatt/rash/wiki/Rash).
+Like most shell programs it can be run in execution and interactive modes. 
+Additionally, it can be included as a standard Ruby library and used as such.
+For details on how to use Rash's features, see the [wiki](https://github.com/KellenWatt/rash/wiki/Rash).
 
 ### Interactive mode
 This is just calling `rash` from whatever your current shell is. This will run a new
@@ -67,6 +68,16 @@ The recommended extension for Rash script files is `.rh`, to distinguish it from
 pure Ruby script, but `.rb` is perfectly acceptable. If you use `.rb` for a Rash 
 script, you may want to write a note that distinguishes it from a normal Ruby 
 script, if applicable.
+
+### As a Library
+To use Rash as a library in your Ruby program, include this line in your program:
+```ruby
+require "rash"
+```
+From here on, any code will be evaluated as if it were in a Rash environment. 
+However, since Ruby code is perfectly valid within Rash, the other two modes are
+more strongly recommended. Technically, this mode is how the `rash` executable 
+works, but it's cleaner to use the executable instead of the library directly.
 
 ## Documentation
 In lieu of normal documentation, Rash is documented using the GitHub 
