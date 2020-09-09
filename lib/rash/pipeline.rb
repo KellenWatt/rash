@@ -4,11 +4,46 @@ class Environment
     @in_pipeline
   end
 
+  def make_pipeline(&block) 
+    raise IOError.new("pipelining already enabled") if @in_pipeline
+    start_pipeline
+    begin
+      block.call
+    ensure
+      end_pipeline
+    end
+  end
+  
+  def as_pipe(&block)
+    raise IOError.new("pipelining not enabled") unless @in_pipeline
+    
+    input = (@active_pipelines.empty? ? $stdin : @active_pipelines.last.reader)
+    @active_pipelines << Pipeline.new
+    output = @active_pipelines.last.writer
+    error = ($stderr == $stdout ? output : $stderr)
+
+    pid = fork do
+      @in_pipeline = false
+      $stdin = input
+      $stdout = output
+      $stderr = error
+      block.call
+      output.close
+      exit!(true)
+    end
+    output.close
+
+    @active_pipelines.last.link_process(pid)
+  end
+
+  private
+  
   def start_pipeline
     @in_pipeline = true
   end
 
   def end_pipeline
+    raise IOError.new("pipelining not enabled") unless @in_pipeline
     @in_pipeline = false
     if @active_pipelines.size > 0
       Process.wait(@active_pipelines.last.pid)
@@ -20,7 +55,9 @@ class Environment
     end
   end
 
+  # special method to be referenced from dispatched. Do not use directly
   def add_pipeline(m, *args)
+    raise IOError.new("pipelining not enabled") unless @in_pipeline
     input = (@active_pipelines.empty? ? $stdin : @active_pipelines.last.reader)
     @active_pipelines << Pipeline.new
     output = @active_pipelines.last.writer
@@ -33,26 +70,6 @@ class Environment
     output.close
     @active_pipelines.last.link_process(pid)
   end
-
-  def as_pipe(&block)
-    input = (@active_pipelines.empty? ? $stdin : @active_pipelines.last.reader)
-    @active_pipelines << Pipeline.new
-    output = @active_pipelines.last.writer
-    error = ($stderr == $stdout ? output : $stderr)
-    pid = fork do
-      @in_pipeline = false
-      $stdin = input
-      $stdout = output
-      $stderr = error
-      block.call
-      output.close
-      exit!(true)
-    end
-    output.close
-    @active_pipelines.last.link_process(pid)
-  end
-
-  private
 
   class Pipeline
     attr_reader :writer, :reader, :pid
@@ -85,11 +102,5 @@ end
 
 
 def in_pipeline(&block) 
-  raise IOError.new("pipelining already enabled") if $env.pipelined?
-  $env.start_pipeline
-  begin
-    block.call
-  ensure
-    $env.end_pipeline
-  end
+  $env.make_pipeline(&block)
 end
