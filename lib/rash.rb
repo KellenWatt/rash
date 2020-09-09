@@ -56,6 +56,14 @@ class Environment
       limits.each {|resource, limit| Process.setrlimit(resource, *limit)}
     end
   end
+  
+  def dispatch(m, *args)
+    if @in_pipeline
+      add_pipeline(m, *args)
+    else
+      system_command(m, *args)
+    end
+  end
 
   private
 
@@ -75,6 +83,23 @@ class Environment
     }
     ENV["RASHDIR"] = File.dirname(__FILE__)
   end
+
+  def resolve_command(m, *args, literal: false) 
+    (literal ? [m.to_s] : resolve_alias(m)) + args.flatten.map{|a| a.to_s} 
+  end
+  
+  def system_command(m, *args, except: false, literal: false, out: nil, input: nil, err: nil)
+    command = resolve_command(m, *args, literal: literal)
+    command.unshift("sudo") if @superuser_mode
+    opts = {out: out || $stdout, 
+            err: err || $stderr, 
+            in: input || $stdin, 
+            exception: except || @superuser_mode,
+            umask: @umask}
+
+    system(*command, opts)
+  end
+
 end
 
 require_relative "rash/redirection"
@@ -103,13 +128,16 @@ def run(file, *args)
   unless File.executable?(exe)
     raise SystemCallError.new("No such executable file - #{exe}", Errno::ENOENT::Errno)
   end
-  system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
+  $env.dispatch(exe, *args, literal: true)
+  # system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
 end
 
 alias cmd __send__
 
 # Defines `bash` psuedo-compatibility. Filesystem effects happen like normal 
 # and environmental variable changes are copied
+#
+# This is an artifact of an old design and is deprecated until further notice.
 def sourcesh(file) 
   bash_env = lambda do |cmd = nil|
     tmpenv = `#{cmd + ';' if cmd} printenv`
@@ -141,17 +169,10 @@ end
 
 # Note that I defy convention and don't define `respond_to_missing?`. This
 # is because doing so screws with irb.
-# This code is a nightmarish monstrosity. I need some kind of "dispatch" method on Environment
 def self.method_missing(m, *args, &block) 
   exe = which(m.to_s)
   if exe || ($env.alias?(m) && !$env.aliasing_disabled)
-    if $env.superuser_mode
-      system("sudo", *$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, exception: true, umask: $env.umask}) 
-    elsif $env.pipelined? # implicitly disallowing superuser_mode for now. Need to refactor to allow
-      $env.add_pipeline(m, *args)
-    else
-      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
-    end
+    $env.dispatch(m, *args)
   else
     super
   end

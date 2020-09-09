@@ -12,6 +12,7 @@ class Environment
     ensure
       end_pipeline
     end
+    nil
   end
   
   def as_pipe(&block)
@@ -34,6 +35,7 @@ class Environment
     output.close
 
     @active_pipelines.last.link_process(pid)
+    nil
   end
 
   private
@@ -55,7 +57,7 @@ class Environment
     end
   end
 
-  # special method to be referenced from dispatched. Do not use directly
+  # special method to be referenced from Environment#dispatch. Do not use directly
   def add_pipeline(m, *args)
     raise IOError.new("pipelining not enabled") unless @in_pipeline
     input = (@active_pipelines.empty? ? $stdin : @active_pipelines.last.reader)
@@ -63,7 +65,7 @@ class Environment
     output = @active_pipelines.last.writer
     error = ($stderr == $stdout ? output : $stderr)
     pid = fork do # might not be necessary, spawn might cover it. Not risking it before testing
-      system(*$env.resolve_alias(m), *args.flatten.map{|a| a.to_s}, {out: output, in: input, err: error, exception: true, umask: @umask})
+      system_command(m, *args, out: output, input: input, err: error, except: true)
       output.close
       exit!(true)
     end
