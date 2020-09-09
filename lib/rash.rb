@@ -1,7 +1,6 @@
 class Environment
   
   attr_reader :aliasing_disabled
-  attr_reader :superuser_mode
   attr_reader :umask
 
   def initialize
