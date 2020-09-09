@@ -17,5 +17,3 @@ end
 def as_background(&block)
   $env.async(&block)
 end
-  
-
