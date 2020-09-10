@@ -14,7 +14,8 @@ Gem::Specification.new do |s|
     "lib/rash/redirection.rb",
     "lib/rash/prompt/irb.rb",
     "lib/rash/ext/filesystem.rb",
-    "lib/rash/pipeline.rb"
+    "lib/rash/pipeline.rb",
+    "lib/rash/capturing.rb"
   ]
   s.add_runtime_dependency("irb", "~> 1.2")
 

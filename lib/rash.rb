@@ -105,6 +105,7 @@ require_relative "rash/redirection"
 require_relative "rash/aliasing"
 require_relative "rash/jobcontrol"
 require_relative "rash/pipeline"
+require_relative "rash/capturing"
 
 $env = Environment.new
 
@@ -128,7 +129,6 @@ def run(file, *args)
     raise SystemCallError.new("No such executable file - #{exe}", Errno::ENOENT::Errno)
   end
   $env.dispatch(exe, *args, literal: true)
-  # system(exe, *args.flatten.map{|a| a.to_s}, {out: $stdout, err: $stderr, in: $stdin, umask: $env.umask})
 end
 
 alias cmd __send__
@@ -151,7 +151,7 @@ end
 
 
 def which(command)
-  cmd = File.expand_path(command)
+  cmd = File.expand_path(command.to_s)
   return cmd if File.executable?(cmd) && !File.directory?(cmd)
   
   exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
