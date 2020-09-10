@@ -48,11 +48,17 @@ class Environment
     raise IOError.new("pipelining not enabled") unless @in_pipeline
     @in_pipeline = false
     if @active_pipelines.size > 0
+      puts "terminating Pipeline"
       Process.wait(@active_pipelines.last.pid)
+      puts "last command finished"
       @active_pipelines.last.writer.close # probably redundant, but leaving it for now
+      puts "writer stream closed"
       IO.copy_stream(@active_pipelines.last.reader, $stdout)
+      puts "output copied to stdout"
       @active_pipelines.pop.close
-      @active_pipelines.reverse_each {|pipe| pipe.terminate}
+      puts "final command terminated"
+      @active_pipelines.reverse_each {|pipe| pipe.terminate; puts "terminated #{pipe}"}
+      puts "terminated all commands"
       @active_pipelines.clear
     end
   end
@@ -92,8 +98,11 @@ class Environment
 
     def terminate
       self.close
-      Process.kill(:PIPE, @pid)
-      Process.wait(@pid)
+      puts "closed pipe"
+      puts Process.kill(:TERM, @pid)
+      puts "killed command: #{@pid}"
+      puts Process.wait(@pid)
+      puts "collected command: #{@pid}"
     end
 
     def to_s
