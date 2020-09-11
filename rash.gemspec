@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "rash-command-shell"
-  s.version = "0.3.1"
+  s.version = "0.3.1.1"
   s.date = "2020-08-29"
   s.summary = "Rash Ain't SH"
   s.description = "A Ruby-based shell"
