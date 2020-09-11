@@ -32,6 +32,7 @@ class Environment
   
   def as_pipe_command(&block)
     raise IOError.new("pipelining not enabled") unless @in_pipeline
+    return as_sync_pipe_command(&block) if @synchronous_pipeline
     
     input = (@active_pipelines.empty? ? $stdin : @active_pipelines.last.reader)
     @active_pipelines << Pipeline.new
@@ -50,6 +51,34 @@ class Environment
     output.close
 
     @active_pipelines.last.link_process(pid)
+    nil
+  end
+
+  def as_sync_pipe_command(&block)
+    raise IOError.new("pipelining not enabled") unless @in_pipeline
+    raise IOError.new("pipeline is not synchronous") unless @synchronous_pipeline
+   
+    @next_pipe.close
+    @next_pipe = Pipeline.new # flush the output pipe
+    @prev_pipe.writer.close
+
+    input = (@first_sync_command ? $stdin : @prev_pipe.reader)
+    @first_sync_command = false
+    output = @next_pipe.writer
+    error = ($stderr == $stdout ? @next_pipe.writer : $stdin)
+
+    pid = fork do
+      @in_pipeline = false
+      @synchronous_pipeline = false
+      $stdin = input
+      $stdout = output
+      $stderr = error
+      block.call
+      exit!(true)
+    end
+
+    Process.wait(pid)
+    @prev_pipe, @next_pipe = @next_pipe, @prev_pipe
     nil
   end
 
@@ -98,7 +127,7 @@ class Environment
   # special method to be referenced from Environment#dispatch. Do not use directly
   def add_pipeline(m, *args)
     raise IOError.new("pipelining not enabled") unless @in_pipeline
-    return add_sync_pipeline if @synchronous_pipeline
+    return add_sync_pipeline(m, *args) if @synchronous_pipeline
 
     input = (@active_pipelines.empty? ? $stdin : @active_pipelines.last.reader)
     @active_pipelines << Pipeline.new
@@ -118,13 +147,16 @@ class Environment
     raise IOError.new("pipeline is not synchronous") unless @synchronous_pipeline
 
     # Ensure pipe is empty for writing
-    @next_pipe.reader.read
+    @next_pipe.close
+    @next_pipe = Pipeline.new
+    @prev_pipe.writer.close
 
     input = (@first_sync_command ? $stdin : @prev_pipe.reader)
     @first_sync_command = false
-    error = ($stderr == $stdout ? @next_pipe.writer)
+    error = ($stderr == $stdout ? @next_pipe.writer : $stdin)
     system_command(m, *args, out: @next_pipe.writer, input: input, err: error, except: true)
     @prev_pipe, @next_pipe = @next_pipe, @prev_pipe
+    nil
   end
 
   class Pipeline
