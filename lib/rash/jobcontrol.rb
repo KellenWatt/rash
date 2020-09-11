@@ -1,6 +1,6 @@
 class Environment
   def jobs
-    @active_jobs.keep_if {|pid| Process.kill(0, pid) rescue false}
+    @active_jobs.keep_if{|pid| Process.kill(0, pid) rescue false}.dup
   end
 
   def async(&block)
