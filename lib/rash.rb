@@ -14,7 +14,21 @@ class Environment
     ENV["OLDPWD"] = old.to_s
     Dir.pwd
   end
-  
+
+  # Note that this works regardless of which version of chdir is used.
+  def push_dir(dir = nil)
+    @directory_stack.push(Dir.pwd)
+    self.chdir(dir)
+  end
+
+  def pop_dir
+    self.chdir(@directory_stack.pop) if @directory_stack.size > 0
+  end
+
+  def dirs
+    @directory_stack.dup
+  end
+
   def add_path(path) 
     ENV["PATH"] += File::PATH_SEPARATOR + (path.respond_to?(:path) ? path.path : path.to_s)
   end
@@ -76,6 +90,8 @@ class Environment
 
     @active_pipelines = []
 
+    @directory_stack = []
+
     @prompt = {
       AUTO_INDENT: true,
       RETURN: ""
@@ -121,6 +137,17 @@ def cd(dir = nil)
   $env.chdir(d)
 end
 
+def pushd(dir = nil)
+  case dir
+  when File, Dir
+    dir = dir.path if File.directory(dir.path)
+  end
+  $env.push_dir(dir)
+end
+
+def popd
+  $env.pop_dir
+end
 
 def run(file, *args)
   filename = file.to_s
