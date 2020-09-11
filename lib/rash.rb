@@ -26,7 +26,7 @@ class Environment
   end
 
   def dirs
-    @directory_stack.dup
+    @directory_stack
   end
 
   def add_path(path) 
