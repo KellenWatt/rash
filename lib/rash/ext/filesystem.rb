@@ -16,20 +16,26 @@ class Environment
     Dir.pwd
   end
 
-  def local_def(name, &block)
-    @working_directory.add_local_method(name.to_sym, &block)
+  def local_def(name, locked: false, &block)
+    @working_directory.add_local_method(name, &block)
+    @working_directory.lock_method(name) if locked
+    name.to_sym
   end
 
   def local_undef(name)
-    @working_directory.clear_local_method(name.to_sym)
+    @working_directory.clear_local_method(name)
   end
 
   def local_method?(name)
-    @working_directory.local_methods.key?(name.to_sym)
+    @working_directory.local_method?(name)
+  end
+
+  def local_methods
+    @working_directory.local_methods
   end
 
   def local_call(name, *args, &block)
-    @working_directory.local_methods[name.to_sym].call(*args, &block)
+    @working_directory.local_method(name).call(*args, &block)
   end
 
   private
@@ -65,7 +71,6 @@ class Environment
   end
 
   class Directory
-    attr_reader :local_methods
     attr_reader :parent, :children
 
     def self.root(dir)
@@ -76,7 +81,31 @@ class Environment
       @path = Dir.new(dir)
       @parent = parent
       @children = []
-      @local_methods = parent&.local_methods.dup || {}
+      @local_methods = parent&.unlocked_local_methods || {}
+      @locked_methods = []
+    end
+
+    def local_method(name)
+      @local_methods[name.to_sym]
+    end
+
+    def local_methods
+      @local_methods.keys
+    end
+
+    def unlocked_local_methods
+      @local_methods.filter{|k, v| !@locked_methods.include?(k)}
+    end
+
+    def lock_method(name)
+      n = name.to_sym
+      raise NameError.new("#{name} is not a local method", n) unless @local_methods.key?(n)
+      @locked_methods << n unless @locked_methods.include?(n)
+      n
+    end
+
+    def local_method?(name)
+      @local_methods.key?(name.to_sym)
     end
 
     def root?
@@ -103,14 +132,14 @@ class Environment
 
     def add_local_method(name, &block)
       raise ArgumentError.new "no method body provided" unless block_given?
-      @local_methods[name] = block # if name already exists, its function is overriden
-      name
+      @local_methods[name.to_sym] = block # if name already exists, its function is overriden
+      name.to_sym
     end
 
     # might not be useful
     def clear_local_method(name)
-      @local_methods.delete(name)
-      name
+      @local_methods.delete(name.to_sym)
+      name.to_sym
     end
 
     def to_s
