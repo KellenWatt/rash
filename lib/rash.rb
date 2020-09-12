@@ -12,6 +12,7 @@ class Environment
     Dir.chdir(dir.nil? ? "~" : dir.to_s)
     @working_directory = Dir.pwd
     ENV["OLDPWD"] = old.to_s
+    ENV["PWD"] = Dir.pwd
     Dir.pwd
   end
 
@@ -192,6 +193,11 @@ def which(command)
   nil
 end
 
+# This breaks some default IRB functionality
+# def self.respond_to_missing?(m, *args)
+#   
+#   which(m.to_s) || ($env.alias?(m) && !$env.aliasing_disabled) || $env.local_method?(m) || super
+# end
 
 # Note that I defy convention and don't define `respond_to_missing?`. This
 # is because doing so screws with irb.

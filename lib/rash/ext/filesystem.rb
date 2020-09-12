@@ -13,6 +13,7 @@ class Environment
     old = @working_directory
     traverse_filetree(Dir.pwd, (dir.nil? ? "~" : dir.to_s))
     ENV["OLDPWD"] = old.to_s
+    ENV["PWD"] = Dir.pwd
     Dir.pwd
   end
 
