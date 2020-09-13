@@ -101,22 +101,49 @@ class Environment
       @path = Dir.new(dir)
       @parent = parent
       @children = []
-      @local_methods = parent&.unlocked_local_methods || {}
+      @local_methods = {}
       @locked_methods = []
       @local_variables = {}
       @locked_variables = []
     end
 
+    ######################
+    # Local method methods
+    ######################
+
     def local_method(name)
-      @local_methods[name.to_sym]
+      name = name.to_sym
+      @local_methods[name] || @parent&.unlocked_local_method(name)
     end
 
+    def local_method?(name)
+      name = name.to_sym
+      @local_methods.key?(name) || !!@parent&.unlocked_local_method?(name)
+    end
+    
     def local_methods
-      @local_methods.keys
+      @local_methods.keys + (@parent&.unlocked_local_methods).to_a
+    end
+
+    def add_local_method(name, &block)
+      raise ArgumentError.new "no method body provided" unless block_given?
+      @local_methods[name.to_sym] = block # if name already exists, its function is overriden
+      name.to_sym
+    end
+
+    def unlocked_local_method(name)
+      name = name.to_sym
+      @local_methods[name] || @parent&.unlocked_local_method(name)
+    end
+
+    def unlocked_local_method?(name)
+      name = name.to_sym
+      @local_methods.filter{|k, v| !@locked_methods.include?(k)}.key?(name) ||
+        !!@parent&.unlocked_local_method?(name)
     end
 
     def unlocked_local_methods
-      @local_methods.filter{|k, v| !@locked_methods.include?(k)}
+      @local_methods.filter{|k, v| !@locked_methods.include?(k)}.keys + (@parent&.unlocked_local_methods).to_a
     end
 
     def lock_method(name)
@@ -126,10 +153,16 @@ class Environment
       n
     end
 
-    def local_method?(name)
-      @local_methods.key?(name.to_sym)
+    # might not be useful
+    def clear_local_method(name)
+      @local_methods.delete(name.to_sym)
+      name.to_sym
     end
-    
+
+    ######################
+    # Local variable stuff
+    ######################
+
     def local_variable(name)
       name = name.to_sym
       @local_variables[name] || @parent&.unlocked_local_variable(name)
@@ -152,13 +185,13 @@ class Environment
       end
     end
     
-    def unlocked_local_variables
-      @local_variables.keys.filter{|k| !@locked_variables.include?(k)} + (@parent&.unlocked_local_variables).to_a
-    end
-
     def unlocked_local_variable(name)
       name = name.to_sym
       @local_variables.filter{|k| !@locked_variables.include?(k)}[name] || @parent&.unlocked_local_variable(name)
+    end
+
+    def unlocked_local_variables
+      @local_variables.keys.filter{|k| !@locked_variables.include?(k)} + (@parent&.unlocked_local_variables).to_a
     end
 
     def unlocked_local_variable?(name)
@@ -178,6 +211,10 @@ class Environment
       @local_variables.delete(name.to_sym)
       name.to_sym
     end
+
+    ###########################
+    # Generic traversal methods
+    ###########################
 
     def root?
       parent.nil?
@@ -201,18 +238,6 @@ class Environment
       dir
     end
 
-    def add_local_method(name, &block)
-      raise ArgumentError.new "no method body provided" unless block_given?
-      @local_methods[name.to_sym] = block # if name already exists, its function is overriden
-      name.to_sym
-    end
-
-    # might not be useful
-    def clear_local_method(name)
-      @local_methods.delete(name.to_sym)
-      name.to_sym
-    end
-
     def to_s
       @path.path
     end
@@ -221,10 +246,9 @@ end
 
 # still could absolutely be more cleaned up, but it works
 def self.method_missing(m, *args, &block)
-  exe = which(m.to_s)
   if $env.local_method?(m)
     $env.local_call(m, *args, &block)
-  elsif exe || ($env.alias?(m) && !$env.aliasing_disabled)
+  elsif which(m.to_s) || ($env.alias?(m) && !$env.aliasing_disabled)
     $env.dispatch(m, *args)
   else
     super
