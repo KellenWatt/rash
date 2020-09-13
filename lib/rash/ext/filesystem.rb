@@ -39,18 +39,22 @@ class Environment
   end
 
   def local_var(name, v = nil, locked: false)
+    res = nil
     if v.nil?
-      @working_directory.local_variable(name)
+      res = @working_directory.local_variable(name)
     else
       @working_directory.set_local_variable(name, v)
+      res = v
     end
+    @working_directory.lock_variable(name) if locked
+    res
   end
   
   def local_var?(name)
     @working_directory.local_variable?(name)
   end
   
-  def local_variables
+  def local_vars
     @working_directory.local_variables
   end
 
@@ -77,7 +81,6 @@ class Environment
     end
 
     to_parts.each do |p|
-      puts p
       @working_directory = @working_directory.child(File.expand_path(p, @working_directory.to_s))
       Dir.chdir(@working_directory.to_s)
       # rashrc_local = @working_directory.to_s + File::SEPARATOR + RASH_LOCAL_FILE
@@ -100,7 +103,7 @@ class Environment
       @children = []
       @local_methods = parent&.unlocked_local_methods || {}
       @locked_methods = []
-      @local_variables = parent&.unlocked_local_variables || {}
+      @local_variables = {}
       @locked_variables = []
     end
 
@@ -128,19 +131,40 @@ class Environment
     end
     
     def local_variable(name)
-      @local_variables[name]
+      name = name.to_sym
+      @local_variables[name] || @parent&.unlocked_local_variable(name)
+    end
+    
+    def local_variable?(name)
+      @local_variables.include?(name.to_sym) || !!@parent&.unlocked_local_variable?(name.to_sym)
     end
     
     def local_variables
-      @local_variables.keys
+      @local_variables.keys + (@parent&.unlocked_local_variables).to_a
     end
     
     def set_local_variable(name, value)
-      @local_variables[name] = value
+      name = name.to_sym
+      if !@local_variables.key?(name) && @parent&.unlocked_local_variable?(name)
+        @parent&.set_local_variable(name, value)
+      else
+        @local_variables[name] = value
+      end
     end
     
     def unlocked_local_variables
-      @local_variables.filter{|k, v| !@locked_variables.include?(k)}
+      @local_variables.keys.filter{|k| !@locked_variables.include?(k)} + (@parent&.unlocked_local_variables).to_a
+    end
+
+    def unlocked_local_variable(name)
+      name = name.to_sym
+      @local_variables.filter{|k| !@locked_variables.include?(k)}[name] || @parent&.unlocked_local_variable(name)
+    end
+
+    def unlocked_local_variable?(name)
+      name = name.to_sym
+      @local_variables.filter{|k,_v| !@locked_variables.include?(k)}.key?(name) ||
+        !!@parent&.unlocked_local_variable?(name)
     end
     
     def lock_variable(name)
@@ -148,10 +172,6 @@ class Environment
       raise NameError.new("#{name} is not a local variable", n) unless @local_variables.key?(n)
       @locked_variables << n unless @locked_variables.include?(n)
       n
-    end
-    
-    def local_variable?(name)
-      @local_variables.include?(name)
     end
     
     def clear_local_variable(name)
