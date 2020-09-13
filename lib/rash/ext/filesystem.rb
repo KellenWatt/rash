@@ -6,12 +6,11 @@ class Environment
   def initialize
     common_init
     @working_directory = Directory.root("/") 
-    traverse_filetree("/", Dir.pwd)
   end
 
   def chdir(dir = nil)
     old = @working_directory
-    traverse_filetree(Dir.pwd, (dir.nil? ? "~" : dir.to_s))
+    traverse_filetree(@working_directory.to_s, (dir.nil? ? "~" : dir.to_s))
     ENV["OLDPWD"] = old.to_s
     ENV["PWD"] = Dir.pwd
     Dir.pwd
@@ -39,21 +38,21 @@ class Environment
     @working_directory.local_method(name).call(*args, &block)
   end
 
-  # def local_var(name, v = nil, locked: false)
-  #   if v.nil?
-  #     @working_directory.local_variable(name)
-  #   else
-  #     @working_directory.set_local_variable(name, v)
-  #   end
-  # end
-  # 
-  # def local_var?(name)
-  #   @working_directory.local_variable?(name)
-  # end
-  # 
-  # def local_variables
-  #   @working_directory.local_variables
-  # end
+  def local_var(name, v = nil, locked: false)
+    if v.nil?
+      @working_directory.local_variable(name)
+    else
+      @working_directory.set_local_variable(name, v)
+    end
+  end
+  
+  def local_var?(name)
+    @working_directory.local_variable?(name)
+  end
+  
+  def local_variables
+    @working_directory.local_variables
+  end
 
   private
 
@@ -78,6 +77,7 @@ class Environment
     end
 
     to_parts.each do |p|
+      puts p
       @working_directory = @working_directory.child(File.expand_path(p, @working_directory.to_s))
       Dir.chdir(@working_directory.to_s)
       # rashrc_local = @working_directory.to_s + File::SEPARATOR + RASH_LOCAL_FILE
@@ -100,8 +100,8 @@ class Environment
       @children = []
       @local_methods = parent&.unlocked_local_methods || {}
       @locked_methods = []
-      # @local_variables = parent&.unlocked_local_variables || {}
-      # @locked_variables = []
+      @local_variables = parent&.unlocked_local_variables || {}
+      @locked_variables = []
     end
 
     def local_method(name)
@@ -126,38 +126,38 @@ class Environment
     def local_method?(name)
       @local_methods.key?(name.to_sym)
     end
-    # 
-    # def local_variable(name)
-    #   @local_variables[name]
-    # end
-    # 
-    # def local_variables
-    #   @local_variables.keys
-    # end
-    # 
-    # def set_local_variable(name, value)
-    #   @local_variables[name] = value
-    # end
-    # 
-    # def unlocked_local_variables
-    #   @local_variables.filter{|k, v| !@locked_variables.include?(k)}
-    # end
-    # 
-    # def lock_variable(name)
-    #   n = name.to_sym
-    #   raise NameError.new("#{name} is not a local variable", n) unless @local_variables.key?(n)
-    #   @locked_variables << n unless @locked_variables.include?(n)
-    #   n
-    # end
-    # 
-    # def local_variable?(name)
-    #   @local_variables.include?(name)
-    # end
-    # 
-    # def clear_local_varaible(name)
-    #   @local_varaibles.delete(name.to_sym)
-    #   name.to_sym
-    # end
+    
+    def local_variable(name)
+      @local_variables[name]
+    end
+    
+    def local_variables
+      @local_variables.keys
+    end
+    
+    def set_local_variable(name, value)
+      @local_variables[name] = value
+    end
+    
+    def unlocked_local_variables
+      @local_variables.filter{|k, v| !@locked_variables.include?(k)}
+    end
+    
+    def lock_variable(name)
+      n = name.to_sym
+      raise NameError.new("#{name} is not a local variable", n) unless @local_variables.key?(n)
+      @locked_variables << n unless @locked_variables.include?(n)
+      n
+    end
+    
+    def local_variable?(name)
+      @local_variables.include?(name)
+    end
+    
+    def clear_local_variable(name)
+      @local_variables.delete(name.to_sym)
+      name.to_sym
+    end
 
     def root?
       parent.nil?
@@ -212,3 +212,4 @@ def self.method_missing(m, *args, &block)
 end
 
 $env = Environment.new
+$env.chdir(Dir.pwd)

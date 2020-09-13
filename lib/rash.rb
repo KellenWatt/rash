@@ -79,6 +79,10 @@ class Environment
     end
   end
 
+  def name?(v)
+    v.kind_of?(String) || v.kind_of?(Symbol)
+  end
+
   private
 
   def common_init
