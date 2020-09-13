@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.metadata = {
     "documentation_uri" => "https://github.com/KellenWatt/rash/wiki",
-    "wiki" => "https://github.com/KellenWatt/rash/wiki"
+    "wiki_uri" => "https://github.com/KellenWatt/rash/wiki"
   }
   
   s.files = [
