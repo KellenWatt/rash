@@ -190,16 +190,16 @@ class Environment
       @local_variables.filter{|k| !@locked_variables.include?(k)}[name] || @parent&.unlocked_local_variable(name)
     end
 
-    def unlocked_local_variables
-      @local_variables.keys.filter{|k| !@locked_variables.include?(k)} + (@parent&.unlocked_local_variables).to_a
-    end
-
     def unlocked_local_variable?(name)
       name = name.to_sym
       @local_variables.filter{|k,_v| !@locked_variables.include?(k)}.key?(name) ||
         !!@parent&.unlocked_local_variable?(name)
     end
     
+    def unlocked_local_variables
+      @local_variables.keys.filter{|k| !@locked_variables.include?(k)} + (@parent&.unlocked_local_variables).to_a
+    end
+
     def lock_variable(name)
       n = name.to_sym
       raise NameError.new("#{name} is not a local variable", n) unless @local_variables.key?(n)
