@@ -50,6 +50,10 @@ instance of Rash, and you can do whatever you like from there.
 This mode works a lot like IRB because, well, it is IRB. You can treat it as such 
 without worrying too much.
 
+Please note that if you want to use Rash as your default shell, you need to ensure 
+that a valid Ruby executable is available when `rash` is called. For RVM and macOS, 
+this isn't necessarily straightforward.
+
 ### Execution mode
 This mode is when you pass a script file and possibly some arguments to the command.
 

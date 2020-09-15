@@ -34,6 +34,8 @@ class Environment
     @working_directory.local_methods
   end
 
+  # This ultimately behaves similarly to a lambda in function if that ever changes, 
+  # then the proc needs to be converted to a lambda.
   def local_call(name, *args, &block)
     @working_directory.local_method(name).call(*args, &block)
   end
