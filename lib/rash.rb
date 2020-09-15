@@ -101,7 +101,6 @@ class Environment
       AUTO_INDENT: true,
       RETURN: ""
     }
-    ENV["RASHDIR"] = File.dirname(__FILE__)
   end
 
   def resolve_command(m, *args, literal: false) 
@@ -214,6 +213,6 @@ def self.method_missing(m, *args, &block)
   end
 end
 
-
+Process.setproctitle("rash")
 run_command_file = "#{$env.HOME}/.rashrc"
 load run_command_file if File.file?(run_command_file)

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 if ARGV.empty?
-  exec("irb", "-r", "rash", *ARGV)
+  exec(["irb", "rash"], "-r", "rash", *ARGV)
 elsif ARGV[0] =~ /(-)?-v(ersion)?/
   puts "Rash (c) 2020 Kellen Watt"
   puts "Version 0.4.2.1" # I may forget to update this
