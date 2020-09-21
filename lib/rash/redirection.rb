@@ -67,7 +67,7 @@ class Environment
   end
 
   def reset_stdin
-    $stdin.close unless standard_stream>($stdin)
+    $stdin.close unless standard_stream?($stdin)
     $stdin = DEFAULT_IO[:in]
   end
 
